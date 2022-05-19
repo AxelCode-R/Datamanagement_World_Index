@@ -34,28 +34,30 @@ get_data_for_ticker_alphaadvantage <- function(tickers, min_date, alpha_key, dai
     
     start_time <- Sys.time()
     suppressMessages(while(as.numeric(Sys.time()-start_time) <= 62){
-      temp_daily_return <- httr::content(
-        httr::GET(paste0("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=",ticker,"&outputsize=full&apikey=",api_key,"&datatype=csv")), 
-        as = "text", 
-        encoding = "UTF-8"
-      )
-      
-      if(substr(temp_daily_return, 1, 9) == "timestamp"){
-        daily_data_raw[[i]] <- cbind(
-          "ticker"=ticker,
-          temp_daily_return %>% 
-            read_csv() %>% 
-            filter(timestamp>=min_date) %>% 
-            arrange(timestamp)
+      try({
+        temp_daily_return <- httr::content(
+          httr::GET(paste0("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=",ticker,"&outputsize=full&apikey=",api_key,"&datatype=csv")), 
+          as = "text", 
+          encoding = "UTF-8"
         )
-        break
-      }else if(substr(temp_daily_return,8,11) == "Note" && !"Error.Message" %in% names(temp_daily_return)){
-        cat("+")
-        Sys.sleep(1)
-      }else{
-        print("Not found!")
-        break
-      }
+        
+        if(substr(temp_daily_return, 1, 9) == "timestamp"){
+          daily_data_raw[[i]] <- cbind(
+            "ticker"=ticker,
+            temp_daily_return %>% 
+              read_csv() %>% 
+              filter(timestamp>=min_date) %>% 
+              arrange(timestamp)
+          )
+          break
+        }else if(substr(temp_daily_return,8,11) == "Note" && !"Error.Message" %in% names(temp_daily_return)){
+          cat("+")
+          Sys.sleep(1)
+        }else{
+          print("Not found!")
+          break
+        }
+      })
     })
     
   }
@@ -89,18 +91,21 @@ get_data_for_ticker_alphaadvantage <- function(tickers, min_date, alpha_key, dai
     
     start_time <- Sys.time()
     while(as.numeric(Sys.time()-start_time) <= 62){
-      temp_overview <- data.frame(jsonlite::fromJSON(paste0("https://www.alphavantage.co/query?function=OVERVIEW&symbol=",ticker,"&apikey=",api_key)))
+      try({
+        temp_overview <- data.frame(jsonlite::fromJSON(paste0("https://www.alphavantage.co/query?function=OVERVIEW&symbol=",ticker,"&apikey=",api_key)))
       
-      if(ncol(temp_overview)>1){
-        overview_data_raw[[i]] <- temp_overview
-        break
-      }else if(ncol(temp_overview)==1 && !"Error.Message" %in% names(temp_overview)){
-        cat("+")
-        Sys.sleep(1)
-      }else{
-        print("Not found!")
-        break
-      }
+        if(ncol(temp_overview)>1){
+          overview_data_raw[[i]] <- temp_overview
+          break
+        }else if(ncol(temp_overview)==1 && !"Error.Message" %in% names(temp_overview)){
+          cat("+")
+          Sys.sleep(1)
+        }else{
+          print("Not found!")
+          break
+        }
+        
+      })
     }
   }
   
@@ -117,21 +122,22 @@ get_data_for_ticker_alphaadvantage <- function(tickers, min_date, alpha_key, dai
     
     start_time <- Sys.time()
     while(as.numeric(Sys.time()-start_time) <= 62){
-      temp_nav <- jsonlite::fromJSON(paste0("https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=",ticker,"&apikey=",api_key))
-      temp_nav <- cbind("ticker"=ticker, temp_nav$quarterlyReports) %>% 
-        select(ticker, "date"=fiscalDateEnding, totalCurrentAssets)
+      try({
+        temp_nav <- jsonlite::fromJSON(paste0("https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=",ticker,"&apikey=",api_key))
+        temp_nav <- cbind("ticker"=ticker, temp_nav$quarterlyReports) %>% 
+          select(ticker, "date"=fiscalDateEnding, totalCurrentAssets)
         
-        
-      if(ncol(temp_overview)>1){
-        NAV_data_raw[[i]] <- temp_nav
-        break
-      }else if(ncol(temp_nav)==1 && !"Error.Message" %in% names(temp_nav)){
-        cat("+")
-        Sys.sleep(1)
-      }else{
-        print("Not found!")
-        break
-      }
+        if(ncol(temp_overview)>1){
+          NAV_data_raw[[i]] <- temp_nav
+          break
+        }else if(ncol(temp_nav)==1 && !"Error.Message" %in% names(temp_nav)){
+          cat("+")
+          Sys.sleep(1)
+        }else{
+          print("Not found!")
+          break
+        }
+      })
     }
   }
   
