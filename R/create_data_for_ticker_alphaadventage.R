@@ -7,6 +7,7 @@ my_spread <- function(data, date_col, key, value){
   colnames(mat) <- data %>% pull(key) %>% unique()
   mat <- xts(mat, order.by = data %>% pull(date_col) %>% unique() %>% as.Date())
   for(i in 1:nc){
+    if(i%%10==0){cat(paste0(i," "))}
     ticker <- colnames(mat)[i]
     temp <- data %>% ungroup() %>% filter(!!sym(key)==ticker) %>% select(any_of(c(date_col, value)))
     mat[temp %>% pull(date_col),i] <- temp %>% pull(value) %>% as.numeric()
@@ -23,13 +24,13 @@ get_data_for_ticker_alphaadvantage <- function(tickers, min_date, alpha_key, dai
     overview = list(),
     NAV = list()
   )
-  
+  print(" ")
   print("daily_data")
   daily_data_raw <- list()
   for(i in 1:length(tickers)){
     ticker <- tickers[i]
     if(i%%10==0){
-      print(paste0("i: ",i))
+      cat(paste0(i, " "))
     }
     
     start_time <- Sys.time()
@@ -81,13 +82,15 @@ get_data_for_ticker_alphaadvantage <- function(tickers, min_date, alpha_key, dai
   rm(daily_data_raw)
   
   
-  
+  print(" ")
   print("overview_data")
   overview_data_raw <- list()
   for(i in 1:length(tickers)){
     ticker <- tickers[i]
     
-    print(paste0("ticker: ", ticker, "  iter: ",i))
+    if(i%%10==0){
+      cat(paste0(i, " "))
+    }
     
     start_time <- Sys.time()
     while(as.numeric(Sys.time()-start_time) <= 62){
@@ -112,13 +115,15 @@ get_data_for_ticker_alphaadvantage <- function(tickers, min_date, alpha_key, dai
   data$overview <- bind_rows(overview_data_raw)
   rm(overview_data_raw)
   
-  
+  print(" ")
   print("NAV_data")
   NAV_data_raw <- list()
   for(i in 1:length(tickers)){
     ticker <- tickers[i]
     
-    print(paste0("ticker: ", ticker, "  iter: ",i))
+    if(i%%10==0){
+      cat(paste0(i, " "))
+    }
     
     start_time <- Sys.time()
     while(as.numeric(Sys.time()-start_time) <= 62){

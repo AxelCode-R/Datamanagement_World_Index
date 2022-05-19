@@ -1,13 +1,6 @@
 source("global.R")
 
-tickers <- c("A", "AAPL", "IBM")
 min_date <- as.Date("2010-01-01")
-daily_prices = TRUE
-daily_return = TRUE
-overview = TRUE
-NAV = TRUE
-
-
 
 active_date <- "2022-05-19"
 listed_etfs <- suppressMessages({
